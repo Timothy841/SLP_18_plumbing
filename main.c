@@ -21,13 +21,14 @@ int main(){
 	int f = fork();
 	if (f){//parent
 		printf("Input:\n");
-		write( fds[WRITE], "hello!", 7);
+		char input[100];
+		fgets(input, 100, stdin);
+		write( fds[WRITE], input, 100);
 		read( fds[READ], line, sizeof(line) );
 		printf("%s\n", line);
 	}
 	else{//child
 	  read( fds[READ], line, sizeof(line) );
-	  printf("%s\n", line);
 	  change(line);
 	  write(fds[WRITE], line, sizeof(line));
 	  return 0;

@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+#define PC 0
+#define CP 1
 #define READ 0
 #define WRITE 1
 
@@ -16,25 +18,25 @@ void change(char *line){
 }
 
 int main(){
-	int fds[2];
-	pipe( fds );
+	int fds[2][2];
+	pipe(fds[PC]);
+	pipe(fds[CP]);
 	char line[100];
 	printf("This changes 'h' to 'H'\n");
 	int f = fork();
-	if (f){//parent
-		printf("Input:\n");
-		char input[100];
-		fgets(input, 100, stdin);
-		write( fds[WRITE], input, 100);
-		int status;
-		wait(&status);
-		read( fds[READ], line, sizeof(line) );
-		printf("%s\n", line);
-	}
-	else{//child
-	  read( fds[READ], line, sizeof(line) );
-	  change(line);
-	  write(fds[WRITE], line, sizeof(line));
-	  return 0;
+	while (1){
+		if (f){//parent
+			printf("Input:\n");
+			char input[100];
+			fgets(input, 100, stdin);
+			write(fds[PC][WRITE], input, 100);
+			read(fds[CP][READ], line, sizeof(line));
+			printf("%s", line);
+		}
+		else{//child
+		  read(fds[PC][READ], line, sizeof(line));
+		  change(line);
+		  write(fds[CP][WRITE], line, sizeof(line));
+		}
 	}
 }
